@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useCheckout, CheckoutStep, ShippingAddress } from '@/hooks/use-checkout'
 import { useCheckoutSettings } from '@/hooks/use-checkout-settings'
+import { useAuth } from '@/hooks/use-auth'
 import { ShoppingBag, ChevronRight, Loader2, Check, ArrowLeft, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { StripePaymentForm } from '@/components/checkout/stripe-payment-form'
@@ -29,8 +30,10 @@ export default function CheckoutPage() {
   } = useCheckout()
 
   const { data: checkoutSettings } = useCheckoutSettings()
+  const { customer, isLoggedIn, isLoading: authLoading } = useAuth()
 
   const [email, setEmail] = useState('')
+  const [marketingOptIn, setMarketingOptIn] = useState(false)
   const [address, setAddress] = useState<ShippingAddress>({
     first_name: '', last_name: '', address_1: '', address_2: '',
     company: '', city: '', postal_code: '', country_code: 'us', phone: '',
@@ -48,11 +51,39 @@ export default function CheckoutPage() {
     }
   }, [cart?.id, hasItems, cart?.total, currency])
 
+  // Require account: redirect to login if not logged in
+  useEffect(() => {
+    if (!authLoading && checkoutSettings?.require_account && !isLoggedIn) {
+      toast.error('Please sign in to continue to checkout')
+      router.push('/auth/login?redirect=/checkout')
+    }
+  }, [authLoading, checkoutSettings?.require_account, isLoggedIn, router])
+
+  // Pre-fill email from customer if logged in
+  useEffect(() => {
+    if (customer?.email && !email) {
+      setEmail(customer.email)
+    }
+  }, [customer?.email, email])
+
+  // Set marketing opt-in default based on settings
+  useEffect(() => {
+    if (checkoutSettings?.marketing_opt_in?.enabled && checkoutSettings.marketing_opt_in.pre_checked) {
+      setMarketingOptIn(true)
+    }
+  }, [checkoutSettings?.marketing_opt_in])
+
   // Step 1: Submit info
   const handleInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     clearError()
     await setContactAndAddress(email, address)
+
+    // TODO: Store marketing opt-in preference in cart metadata or customer metadata
+    // For now, it's captured but not persisted
+    if (marketingOptIn) {
+      console.log('Customer opted in to marketing emails')
+    }
   }
 
   // Step 2: Submit shipping
@@ -141,6 +172,8 @@ export default function CheckoutPage() {
               <form onSubmit={handleInfoSubmit} className="space-y-8">
                 <section>
                   <h2 className="text-xs uppercase tracking-widest font-semibold mb-4">Contact</h2>
+
+                  {/* Email - always required */}
                   <input
                     type="email"
                     value={email}
@@ -149,6 +182,21 @@ export default function CheckoutPage() {
                     placeholder="Email address"
                     className="w-full border-b border-foreground/20 bg-transparent px-0 py-3 text-sm placeholder:text-muted-foreground focus:border-foreground focus:outline-none transition-colors"
                   />
+
+                  {/* Marketing opt-in checkbox */}
+                  {checkoutSettings?.marketing_opt_in?.enabled && checkoutSettings.marketing_opt_in.where !== 'signin' && (
+                    <label className="flex items-start gap-2 mt-4 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={marketingOptIn}
+                        onChange={(e) => setMarketingOptIn(e.target.checked)}
+                        className="w-4 h-4 mt-0.5 text-foreground focus:ring-2 focus:ring-foreground rounded"
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        Email me with news and offers
+                      </span>
+                    </label>
+                  )}
                 </section>
 
                 <section>

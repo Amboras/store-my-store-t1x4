@@ -36,7 +36,7 @@ export default function CheckoutPage() {
   const [marketingOptIn, setMarketingOptIn] = useState(false)
   const [address, setAddress] = useState<ShippingAddress>({
     first_name: '', last_name: '', address_1: '', address_2: '',
-    company: '', city: '', postal_code: '', country_code: 'us', phone: '',
+    company: '', city: '', postal_code: '', country_code: '', phone: '',
   })
   const [selectedShipping, setSelectedShipping] = useState('')
 
@@ -65,6 +65,17 @@ export default function CheckoutPage() {
       setEmail(customer.email)
     }
   }, [customer?.email, email])
+
+  // Set country code from cart region (only once, on first load)
+  const countryCodeSet = useRef(false)
+  useEffect(() => {
+    if (countryCodeSet.current) return
+    const countryCode = cart?.shipping_address?.country_code || cart?.region?.countries?.[0]?.iso_2
+    if (countryCode) {
+      countryCodeSet.current = true
+      setAddress((prev) => ({ ...prev, country_code: countryCode }))
+    }
+  }, [cart?.shipping_address?.country_code, cart?.region?.countries])
 
   // Set marketing opt-in default based on settings
   useEffect(() => {

@@ -7,9 +7,11 @@ import { useRouter } from 'next/navigation'
 import { useCheckout, CheckoutStep, ShippingAddress } from '@/hooks/use-checkout'
 import { useCheckoutSettings } from '@/hooks/use-checkout-settings'
 import { useAuth } from '@/hooks/use-auth'
+import { useCart } from '@/hooks/use-cart'
 import { ShoppingBag, ChevronRight, Loader2, Check, ArrowLeft, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { StripePaymentForm } from '@/components/checkout/stripe-payment-form'
+import { PromoCodeInput } from '@/components/checkout/promo-code-input'
 import { getProductImage } from '@/lib/utils/placeholder-images'
 import { trackBeginCheckout } from '@/lib/analytics'
 
@@ -31,6 +33,10 @@ export default function CheckoutPage() {
 
   const { data: checkoutSettings } = useCheckoutSettings()
   const { customer, isLoggedIn, isLoading: authLoading } = useAuth()
+  const {
+    appliedPromoCodes, discountTotal, applyPromoCode, removePromoCode,
+    isApplyingPromo, isRemovingPromo,
+  } = useCart()
 
   const [email, setEmail] = useState('')
   const [marketingOptIn, setMarketingOptIn] = useState(false)
@@ -508,11 +514,29 @@ export default function CheckoutPage() {
                     ))}
                   </div>
 
+                  <div className="border-t pt-4">
+                    <PromoCodeInput
+                      appliedPromoCodes={appliedPromoCodes}
+                      discountTotal={discountTotal}
+                      currencyCode={currency}
+                      isApplyingPromo={isApplyingPromo}
+                      isRemovingPromo={isRemovingPromo}
+                      onApply={applyPromoCode}
+                      onRemove={removePromoCode}
+                    />
+                  </div>
+
                   <div className="space-y-2 text-sm border-t pt-4">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span>{formatPrice(cart?.subtotal || 0, currency)}</span>
+                      <span>{formatPrice((cart as any)?.original_item_subtotal ?? cart?.subtotal ?? 0, currency)}</span>
                     </div>
+                    {discountTotal > 0 && (
+                      <div className="flex justify-between text-green-700 dark:text-green-500">
+                        <span className="text-muted-foreground">Discount</span>
+                        <span>-{formatPrice(discountTotal, currency)}</span>
+                      </div>
+                    )}
                     {cart?.shipping_total != null && cart.shipping_total > 0 && (
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Shipping</span>

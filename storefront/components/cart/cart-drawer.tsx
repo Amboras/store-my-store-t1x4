@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { X, ShoppingBag, Minus, Plus, Trash2 } from 'lucide-react'
 import { getProductImage } from '@/lib/utils/placeholder-images'
 import { formatPrice } from '@/lib/utils/format-price'
+import { PromoCodeInput } from '@/components/checkout/promo-code-input'
 
 interface CartDrawerProps {
   isOpen: boolean
@@ -13,7 +14,11 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { cart, removeItem, updateItem, itemCount, subtotal, isLoading } = useCart()
+  const {
+    cart, removeItem, updateItem, itemCount, subtotal, isLoading,
+    appliedPromoCodes, discountTotal, applyPromoCode, removePromoCode,
+    isApplyingPromo, isRemovingPromo,
+  } = useCart()
 
   if (!isOpen) return null
 
@@ -140,9 +145,26 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         {/* Footer */}
         {cart?.items && cart.items.length > 0 && (
           <div className="border-t px-6 py-5 space-y-4">
-            <div className="flex justify-between items-baseline">
-              <span className="text-sm uppercase tracking-wide">Subtotal</span>
-              <span className="text-lg font-heading font-semibold">{formattedSubtotal}</span>
+            <PromoCodeInput
+              appliedPromoCodes={appliedPromoCodes}
+              discountTotal={discountTotal}
+              currencyCode={currencyCode}
+              isApplyingPromo={isApplyingPromo}
+              isRemovingPromo={isRemovingPromo}
+              onApply={applyPromoCode}
+              onRemove={removePromoCode}
+            />
+            <div className="space-y-1.5 pt-1">
+              <div className="flex justify-between items-baseline">
+                <span className="text-sm uppercase tracking-wide">Subtotal</span>
+                <span className="text-lg font-heading font-semibold">{formattedSubtotal}</span>
+              </div>
+              {discountTotal > 0 && (
+                <div className="flex justify-between text-sm text-green-700 dark:text-green-500">
+                  <span>Discount</span>
+                  <span>-{formatPrice(discountTotal, currencyCode)}</span>
+                </div>
+              )}
             </div>
             <p className="text-xs text-muted-foreground">
               Shipping and taxes calculated at checkout

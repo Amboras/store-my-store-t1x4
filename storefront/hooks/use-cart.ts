@@ -113,14 +113,46 @@ export function useCart() {
     },
   })
 
+  const applyPromoCode = useMutation({
+    mutationFn: async (code: string) => {
+      if (!cart) throw new Error('No cart available')
+      const existingCodes = (cart.promotions || []).map((p: any) => p.code)
+      const response = await medusaClient.store.cart.update(cart.id, {
+        promo_codes: [...existingCodes, code.trim().toUpperCase()],
+      })
+      return response.cart
+    },
+    onSuccess: (updatedCart) => {
+      queryClient.setQueryData(['cart'], updatedCart)
+    },
+  })
+
+  const removePromoCode = useMutation({
+    mutationFn: async (code: string) => {
+      if (!cart) throw new Error('No cart available')
+      const existingCodes = (cart.promotions || []).map((p: any) => p.code)
+      const response = await medusaClient.store.cart.update(cart.id, {
+        promo_codes: existingCodes.filter((c: string) => c !== code),
+      })
+      return response.cart
+    },
+    onSuccess: (updatedCart) => {
+      queryClient.setQueryData(['cart'], updatedCart)
+    },
+  })
+
   const clearCart = () => {
     clearCartId()
     queryClient.invalidateQueries({ queryKey: ['cart'] })
   }
 
   const itemCount = cart?.items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0
-  const subtotal = cart?.subtotal || 0
+  // Use original_item_subtotal (pre-discount) so the subtotal row always shows the
+  // un-discounted items total. The discount line then shows the reduction separately.
+  const subtotal = (cart as any)?.original_item_subtotal ?? cart?.subtotal ?? 0
   const total = cart?.total || 0
+  const appliedPromoCodes: string[] = (cart?.promotions || []).map((p: any) => p.code)
+  const discountTotal = (cart?.discount_total || 0) + ((cart as any)?.shipping_discount_total || 0)
 
   return {
     cart,
@@ -129,13 +161,19 @@ export function useCart() {
     itemCount,
     subtotal,
     total,
+    appliedPromoCodes,
+    discountTotal,
     addItem: addItem.mutate,
     addItemAsync: addItem.mutateAsync,
     updateItem: updateItem.mutate,
     removeItem: removeItem.mutate,
+    applyPromoCode: applyPromoCode.mutateAsync,
+    removePromoCode: removePromoCode.mutateAsync,
     clearCart,
     isAddingItem: addItem.isPending,
     isUpdatingItem: updateItem.isPending,
     isRemovingItem: removeItem.isPending,
+    isApplyingPromo: applyPromoCode.isPending,
+    isRemovingPromo: removePromoCode.isPending,
   }
 }

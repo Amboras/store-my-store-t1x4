@@ -30,10 +30,10 @@ const body = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Store — Modern Commerce',
-    template: '%s | Store',
+    default: "Trainer's Vault SG — Authentic Pokémon TCG Packs & Boxes",
+    template: "%s | Trainer's Vault SG",
   },
-  description: 'Discover curated products crafted with care. A modern ecommerce experience.',
+  description: "Singapore's most trusted local Pokémon TCG shop. 100% authentic, price-matched, and every purchase earns a stamp toward free packs, free delivery and member-only discounts.",
 }
 
 export default function RootLayout({

@@ -82,26 +82,30 @@ export default function Header() {
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
-              <span className="font-heading text-2xl font-semibold tracking-tight">
-                Store
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-amber-300 font-heading text-sm font-bold">
+                TV
+              </span>
+              <span className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-slate-950">
+                Trainer&apos;s Vault
+                <span className="text-amber-500">.</span>
+                <span className="hidden sm:inline text-xs font-semibold uppercase tracking-widest text-muted-foreground ml-1.5">SG</span>
               </span>
             </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-8">
               <Link href="/products" className="text-sm tracking-wide uppercase link-underline py-1" prefetch={true}>
-                Shop All
+                Shop Packs
               </Link>
-              {collections?.slice(0, 4).map((collection: any) => (
-                <Link
-                  key={collection.id}
-                  href={`/collections/${collection.handle}`}
-                  className="text-sm tracking-wide uppercase link-underline py-1"
-                  prefetch={true}
-                >
-                  {collection.title}
-                </Link>
-              ))}
+              <Link href="/#rewards" className="text-sm tracking-wide uppercase link-underline py-1">
+                Rewards Card
+              </Link>
+              <Link href="/#why-us" className="text-sm tracking-wide uppercase link-underline py-1">
+                Why Us
+              </Link>
+              <Link href="/faq" className="text-sm tracking-wide uppercase link-underline py-1" prefetch={true}>
+                FAQ
+              </Link>
             </nav>
 
             {/* Actions */}

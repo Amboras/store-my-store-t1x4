@@ -3,11 +3,11 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
-import { ArrowRight, Truck, Shield, RotateCcw } from 'lucide-react'
+import { ArrowRight, Truck, Shield, RotateCcw, Sparkles } from 'lucide-react'
 import CollectionSection from '@/components/marketing/collection-section'
 import { useCollections } from '@/hooks/use-collections'
 import { trackMetaEvent } from '@/lib/meta-pixel'
-import { HERO_PLACEHOLDER, LIFESTYLE_PLACEHOLDER } from '@/lib/utils/placeholder-images'
+import { LIFESTYLE_PLACEHOLDER } from '@/lib/utils/placeholder-images'
 
 export default function HomePage() {
   const { data: collections, isLoading } = useCollections()
@@ -28,12 +28,13 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative bg-muted/30 overflow-hidden">
+      {/* Hero Section — split with animated gradient */}
+      <section className="relative overflow-hidden bg-muted/30">
         <div className="container-custom grid lg:grid-cols-2 gap-8 items-center py-section lg:py-32">
           {/* Text Content */}
-          <div className="space-y-6 animate-fade-in-up">
-            <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
+          <div className="space-y-6 animate-fade-in-up relative z-10">
+            <p className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-muted-foreground">
+              <Sparkles className="h-3.5 w-3.5" strokeWidth={1.5} />
               New Collection
             </p>
             <h1 className="text-display font-heading font-semibold text-balance">
@@ -61,18 +62,60 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Hero Image */}
-          <div className="relative aspect-[4/5] lg:aspect-[3/4] bg-muted rounded-sm overflow-hidden animate-fade-in">
-            <Image
-              src={HERO_PLACEHOLDER}
-              alt="Hero - New Collection"
-              fill
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover"
-              priority
-            />
+          {/* Animated Gradient Panel */}
+          <div className="relative aspect-[4/5] lg:aspect-[3/4] rounded-sm overflow-hidden animate-fade-in bg-foreground">
+            {/* Animated color blobs */}
+            <div className="absolute inset-0">
+              <div className="absolute -top-1/4 -left-1/4 h-[70%] w-[70%] rounded-full bg-[hsl(35,70%,55%)] opacity-60 blur-3xl animate-blob-1" />
+              <div className="absolute top-1/3 -right-1/4 h-[65%] w-[65%] rounded-full bg-[hsl(15,75%,60%)] opacity-50 blur-3xl animate-blob-2" />
+              <div className="absolute -bottom-1/4 left-1/4 h-[70%] w-[70%] rounded-full bg-[hsl(340,60%,55%)] opacity-50 blur-3xl animate-blob-3" />
+              <div className="absolute top-1/4 left-1/3 h-[50%] w-[50%] rounded-full bg-[hsl(280,50%,50%)] opacity-40 blur-3xl animate-blob-4" />
+            </div>
+            {/* Subtle grain + vignette overlay */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-black/30 via-transparent to-black/20" />
+            {/* Caption */}
+            <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between text-white/90">
+              <div>
+                <p className="text-xs uppercase tracking-[0.25em] opacity-70">Autumn / Winter</p>
+                <p className="font-heading text-2xl mt-1">Vol. 02</p>
+              </div>
+              <span className="h-px w-16 bg-white/50 mb-3" />
+            </div>
           </div>
         </div>
+
+        {/* Keyframes for animated blobs (scoped to this page) */}
+        <style jsx>{`
+          @keyframes blob-1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(20%, 15%) scale(1.15); }
+            66% { transform: translate(-10%, 25%) scale(0.9); }
+          }
+          @keyframes blob-2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-25%, 10%) scale(0.95); }
+            66% { transform: translate(-15%, -20%) scale(1.1); }
+          }
+          @keyframes blob-3 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(15%, -20%) scale(1.1); }
+            66% { transform: translate(25%, 5%) scale(0.95); }
+          }
+          @keyframes blob-4 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-20%, 20%) scale(1.2); }
+          }
+          :global(.animate-blob-1) { animation: blob-1 18s ease-in-out infinite; }
+          :global(.animate-blob-2) { animation: blob-2 22s ease-in-out infinite; }
+          :global(.animate-blob-3) { animation: blob-3 20s ease-in-out infinite; }
+          :global(.animate-blob-4) { animation: blob-4 16s ease-in-out infinite; }
+          @media (prefers-reduced-motion: reduce) {
+            :global(.animate-blob-1),
+            :global(.animate-blob-2),
+            :global(.animate-blob-3),
+            :global(.animate-blob-4) { animation: none; }
+          }
+        `}</style>
       </section>
 
       {/* Collections */}
